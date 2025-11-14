@@ -28,13 +28,16 @@ android {
             )
         }
     }
+
+    // ✅ Usa JDK 17
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
+
     buildFeatures {
         compose = true
     }
@@ -42,6 +45,7 @@ android {
 
 dependencies {
 
+    // AndroidX + Compose base
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -49,8 +53,28 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+
+    // ✅ Material Design 3 (con NavigationBarItem)
     implementation(libs.androidx.material3)
+    implementation("androidx.compose.material3:material3:1.2.1")
+
+    // ✅ Íconos extendidos (necesario para Icons.Filled.BarChart)
+    implementation("androidx.compose.material:material-icons-extended")
+
+    // Firebase
     implementation(libs.firebase.auth)
+    implementation(platform(libs.firebase.bom))
+    implementation("com.google.firebase:firebase-firestore-ktx:24.4.5")
+    implementation("com.google.firebase:firebase-storage-ktx:20.1.0")
+    implementation("com.google.firebase:firebase-analytics-ktx:21.3.0")
+
+    // ✅ MPAndroidChart (gráficas)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    // ✅ Navegación Compose
+    implementation(libs.androidx.navigation.compose)
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -58,14 +82,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    //Navegation
-    implementation (libs.androidx.navigation.compose)
-
-    //firebase
-    implementation(platform(libs.firebase.bom))
-
-    //auth
-
-
 }

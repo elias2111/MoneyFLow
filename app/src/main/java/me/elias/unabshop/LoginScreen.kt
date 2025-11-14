@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
@@ -39,6 +38,7 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
 
     Scaffold { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -47,10 +47,12 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            // Logo UNAB
             Image(
                 painter = painterResource(id = R.drawable.img_icon_unab),
-                contentDescription = "Usuario",
-                modifier = Modifier.size(200.dp)
+                contentDescription = "Logo UNAB",
+                modifier = Modifier.size(150.dp)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -64,13 +66,12 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // EMAIL
             OutlinedTextField(
                 value = inputEmail,
                 onValueChange = { inputEmail = it },
                 label = { Text("Correo Electrónico") },
-                leadingIcon = {
-                    Icon(Icons.Default.Email, contentDescription = "Email", tint = Color(0xFF666666))
-                },
+                leadingIcon = { Icon(Icons.Default.Email, null, tint = Color.Gray) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
@@ -78,45 +79,44 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // PASSWORD
             OutlinedTextField(
                 value = inputPassword,
                 onValueChange = { inputPassword = it },
                 label = { Text("Contraseña") },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = "Contraseña", tint = Color(0xFF666666))
-                },
+                leadingIcon = { Icon(Icons.Default.Lock, null, tint = Color.Gray) },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF6200EE),
-                    unfocusedBorderColor = Color(0xFFCCCCCC)
-                )
+                shape = RoundedCornerShape(12.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // ERROR MESSAGE
             if (loginError.isNotEmpty()) {
                 Text(text = loginError, color = Color.Red, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
+            // LOGIN BUTTON
             Button(
                 onClick = {
-                    if (inputEmail.isNotEmpty() && inputPassword.isNotEmpty()) {
+                    if (inputEmail.isNotBlank() && inputPassword.isNotBlank()) {
                         isLoading = true
+                        loginError = ""
+
                         auth.signInWithEmailAndPassword(inputEmail, inputPassword)
                             .addOnCompleteListener(activity) { task ->
                                 isLoading = false
                                 if (task.isSuccessful) {
                                     onLoginSuccess()
                                 } else {
-                                    loginError = "Error al iniciar sesión: ${task.exception?.message}"
+                                    loginError = "Error: ${task.exception?.message}"
                                 }
                             }
                     } else {
-                        loginError = "Por favor ingrese correo y contraseña."
+                        loginError = "Por favor ingresa correo y contraseña."
                     }
                 },
                 modifier = Modifier
@@ -126,18 +126,24 @@ fun LoginScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9900))
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(22.dp)
+                    )
                 } else {
-                    Text("Iniciar Sesión", fontSize = 16.sp, color = Color.White)
+                    Text("Iniciar Sesión", color = Color.White, fontSize = 16.sp)
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // REGISTRATION BUTTON
             TextButton(onClick = onClickRegister) {
                 Text("¿No tienes una cuenta? Regístrate", color = Color(0xFFFF9900))
             }
         }
     }
 }
+
 

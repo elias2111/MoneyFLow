@@ -1,71 +1,55 @@
 package me.elias.unabshop
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.padding
+
+sealed class NavItem(val route: String, val icon: ImageVector, val label: String) {
+    object Home : NavItem("home", Icons.Filled.Home, "Home")
+    object Stats : NavItem("stats", Icons.Filled.BarChart, "Statistics")
+    object Tx : NavItem("tx", Icons.Filled.List, "Transactions")
+    object Settings : NavItem("settings", Icons.Filled.Settings, "Settings")
+}
 
 @Composable
 fun NavigationApp() {
-    val navController = rememberNavController()
-    val auth = FirebaseAuth.getInstance()
 
-    // Estado inicial de la ruta dependiendo de si hay usuario o no
-    val startDestination = remember { mutableStateOf("login") }
+    var screen by remember { mutableStateOf<NavItem>(NavItem.Home) }
 
-    LaunchedEffect(Unit) {
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            startDestination.value = "home"
-        }
-    }
-
-    NavHost(
-        navController = navController,
-        startDestination = startDestination.value
-    ) {
-        // Pantalla de Login
-        composable("login") {
-            LoginScreen(
-                onClickRegister = {
-                    navController.navigate("register")
-                },
-                onLoginSuccess = {
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
-                    }
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                listOf(
+                    NavItem.Home,
+                    NavItem.Stats,
+                    NavItem.Tx,
+                    NavItem.Settings
+                ).forEach { item ->
+                    NavigationBarItem(
+                        selected = screen.route == item.route,
+                        onClick = { screen = item },
+                        icon = { Icon(item.icon, contentDescription = item.label) },
+                        label = { Text(item.label) }
+                    )
                 }
-            )
+            }
         }
+    ) { padding ->
 
-        // Pantalla de Registro
-        composable("register") {
-            RegisterScreen(
-                onClickBack = {
-                    navController.popBackStack() // Regresar al login
-                },
-                onRegisterSuccess = {
-                    navController.navigate("login") {
-                        popUpTo("register") { inclusive = true }
-                    }
-                }
-            )
-        }
+        // 👇 IMPORTANTE: aplicar padding a las pantallas
+        val modifier = Modifier.padding(padding)
 
-        // Pantalla principal
-        composable("home") {
-            HomeScreen(
-                onLogout = {
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                }
-            )
+        when (screen) {
+            NavItem.Home -> HomeScreen()
+            NavItem.Stats -> StatisticsScreen()
+            NavItem.Tx -> TransactionsScreen()
+            NavItem.Settings -> SettingsScreen()
         }
     }
 }
+
 
