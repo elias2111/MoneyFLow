@@ -26,47 +26,39 @@ fun StatisticsScreen() {
         listOf(Color(0xFF7EE8FA), Color(0xFFEEC0C6))
     )
 
-    val tx = remember { mutableStateListOf<Transaction>() }
+    val items = remember { mutableStateListOf<Transaction>() }
 
     LaunchedEffect(Unit) {
         FirestoreRepository.listenAll { list ->
-            tx.clear()
-            tx.addAll(list)
+            items.clear()
+            items.addAll(list)
         }
     }
 
-    // Solo gastos (amount negativo)
-    val totals = tx.filter { it.amount < 0 }
-        .groupBy { it.category }
-        .mapValues { (_, data) ->
-            -data.sumOf { it.amount } // Hacerlos positivos para el gráfico
-        }
+    val ingresos = items.filter { it.amount > 0 }.sumOf { it.amount }
+    val gastos = items.filter { it.amount < 0 }.sumOf { -it.amount }
 
     Box(
-        Modifier.fillMaxSize().background(gradient).padding(20.dp),
+        Modifier
+            .fillMaxSize()
+            .background(gradient)
+            .padding(20.dp),
         contentAlignment = Alignment.TopCenter
     ) {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
             Text(
-                "MoneyFlow",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    color = Color(0xFF3A0CA3)
-                )
-            )
-
-            Text(
                 "Statistics",
-                style = MaterialTheme.typography.headlineMedium.copy(
+                style = MaterialTheme.typography.headlineLarge.copy(
                     color = Color(0xFF3A0CA3)
                 )
             )
 
             Spacer(Modifier.height(20.dp))
 
-            if (totals.isEmpty()) {
-                Text("No expenses yet", color = Color.DarkGray)
+            if (items.isEmpty()) {
+                Text("No data yet")
             } else {
 
                 AndroidView(
@@ -74,34 +66,26 @@ fun StatisticsScreen() {
                         .fillMaxWidth()
                         .height(350.dp),
                     factory = { ctx ->
-
                         PieChart(ctx).apply {
 
-                            val entries = totals.map { (cat, value) ->
-                                PieEntry(value.toFloat(), cat)
-                            }
+                            val entries = mutableListOf<PieEntry>()
+                            if (ingresos > 0) entries.add(PieEntry(ingresos.toFloat(), "Ingresos"))
+                            if (gastos > 0) entries.add(PieEntry(gastos.toFloat(), "Gastos"))
 
-                            val set = PieDataSet(entries, "Expenses by category").apply {
+                            val set = PieDataSet(entries, "Balance").apply {
                                 colors = listOf(
-                                    Color(0xFF4361EE).toArgb(),
-                                    Color(0xFF3A0CA3).toArgb(),
-                                    Color(0xFF4CC9F0).toArgb(),
-                                    Color(0xFF7209B7).toArgb(),
-                                    Color(0xFFF72585).toArgb()
+                                    Color(0xFF00A676).toArgb(), // Ingresos
+                                    Color(0xFFB00020).toArgb()  // Gastos
                                 )
-                                valueTextColor = android.graphics.Color.WHITE
                                 valueTextSize = 14f
-                                sliceSpace = 2f
+                                valueTextColor = android.graphics.Color.WHITE
                             }
 
                             data = PieData(set)
 
-                            legend.isEnabled = true
-                            legend.textSize = 14f
-
-                            setUsePercentValues(true)
-
                             description.isEnabled = false
+                            legend.isEnabled = true
+
                             isDrawHoleEnabled = true
                             holeRadius = 40f
 
@@ -116,7 +100,6 @@ fun StatisticsScreen() {
         }
     }
 }
-
 
 
 
